@@ -1,0 +1,75 @@
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMRole
+metadata:
+  name: crossplane-eks-role
+  namespace: crossplane-system
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "eks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      }
+    description: "IAM Role for Crossplane to manage EKS clusters"
+    permissionsBoundary: ""
+    tags:
+      - key: "crossplane"
+        value: "eks-role"
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: crossplane-eks-role-secret
+
+---
+
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMPolicy
+metadata:
+  name: crossplane-eks-policy
+  namespace: crossplane-system
+spec:
+  forProvider:
+    policyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "eks:*",
+              "ec2:*",
+              "iam:PassRole",
+              "elasticloadbalancing:*",
+              "autoscaling:*",
+              "cloudwatch:*"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }
+    description: "IAM Policy for Crossplane to manage EKS clusters"
+    tags:
+      - key: "crossplane"
+        value: "eks-policy"
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: crossplane-eks-policy-secret
+
+---
+
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: crossplane-eks-role-attachment
+  namespace: crossplane-system
+spec:
+  forProvider:
+    policyArn: "arn:aws:iam::{{ aws:AccountId }}:policy/crossplane-eks-policy" # Replace with your AWS Account ID
+    roleName: "crossplane-eks-role"
