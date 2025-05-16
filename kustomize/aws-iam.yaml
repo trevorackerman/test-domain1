@@ -1,11 +1,12 @@
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMRole
+---
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Role
 metadata:
   name: crossplane-eks-role
   namespace: crossplane-system
 spec:
   forProvider:
-    assumeRolePolicyDocument: |
+    assumeRolePolicy: |
       {
         "Version": "2012-10-17",
         "Statement": [
@@ -19,7 +20,6 @@ spec:
         ]
       }
     description: "IAM Role for Crossplane to manage EKS clusters"
-    permissionsBoundary: ""
     tags:
       - key: "crossplane"
         value: "eks-role"
@@ -29,14 +29,14 @@ spec:
 
 ---
 
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMPolicy
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Policy
 metadata:
   name: crossplane-eks-policy
   namespace: crossplane-system
 spec:
   forProvider:
-    policyDocument: |
+    policy: |
       {
         "Version": "2012-10-17",
         "Statement": [
@@ -64,12 +64,12 @@ spec:
 
 ---
 
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: crossplane-eks-role-attachment
   namespace: crossplane-system
 spec:
   forProvider:
-    policyArn: "arn:aws:iam::{{ aws:AccountId }}:policy/crossplane-eks-policy" # Replace with your AWS Account ID
+    policyArn: "arn:aws:iam::{{ aws:AccountId }}:policy/crossplane-eks-policy"
     roleName: "crossplane-eks-role"
